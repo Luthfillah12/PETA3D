@@ -1,0 +1,293 @@
+import React, { useState, useEffect } from 'react';
+import { Trophy, CheckCircle, XCircle, RefreshCcw, ChevronRight, BookOpen, Calculator, Box } from 'lucide-react';
+
+const questions = [
+  {
+    question: "Berapakah jumlah titik sudut yang dimiliki oleh sebuah kubus?",
+    options: ["4", "6", "8", "12"],
+    correct: 2,
+    explanation: "Kubus memiliki 4 titik sudut di bagian alas dan 4 di bagian atas, sehingga totalnya ada 8."
+  },
+  {
+    question: "Sebuah kubus memiliki panjang rusuk 6 cm. Berapakah luas permukaan kubus tersebut?",
+    options: ["36 cm²", "144 cm²", "216 cm²", "24 cm²"],
+    correct: 2,
+    explanation: "Luas permukaan kubus = 6 × s² = 6 × 6² = 6 × 36 = 216 cm²."
+  },
+  {
+    question: "Volume sebuah balok dengan panjang 10 cm, lebar 5 cm, dan tinggi 4 cm adalah...",
+    options: ["100 cm³", "19 cm³", "200 cm³", "400 cm³"],
+    correct: 2,
+    explanation: "Volume balok = p × l × t = 10 × 5 × 4 = 200 cm³."
+  },
+  {
+    question: "Berapakah jumlah rusuk pada sebuah prisma segitiga?",
+    options: ["5", "6", "9", "12"],
+    correct: 2,
+    explanation: "Prisma segitiga memiliki 3 rusuk alas, 3 rusuk atas, dan 3 rusuk tegak. Total = 9 rusuk."
+  },
+  {
+    question: "Rumus volume limas secara umum adalah...",
+    options: [
+      "Luas alas x Tinggi",
+      "1/2 x Luas alas x Tinggi",
+      "1/3 x Luas alas x Tinggi",
+      "2/3 x Luas alas x Tinggi"
+    ],
+    correct: 2,
+    explanation: "Volume limas adalah sepertiga dari volume prisma dengan alas dan tinggi yang sama."
+  },
+  {
+    question: "Sebuah limas memiliki alas berbentuk persegi dengan panjang sisi 10 cm. Jika tinggi limas adalah 12 cm, berapakah volumenya?",
+    options: ["300 cm³", "400 cm³", "600 cm³", "1200 cm³"],
+    correct: 1,
+    explanation: "Volume = 1/3 × Luas Alas × t = 1/3 × (10 × 10) × 12 = 400 cm³."
+  },
+  {
+    question: "Jika sebuah kubus memiliki volume 512 cm³, maka panjang rusuknya adalah...",
+    options: ["6 cm", "7 cm", "8 cm", "9 cm"],
+    correct: 2,
+    explanation: "Panjang rusuk = ∛Volume = ∛512 = 8 cm (karena 8 × 8 × 8 = 512)."
+  },
+  {
+    question: "Berapakah jumlah sisi pada limas segilima?",
+    options: ["5", "6", "10", "12"],
+    correct: 1,
+    explanation: "Limas segi-n memiliki n + 1 sisi. Untuk segilima: 5 (sisi tegak) + 1 (alas) = 6 sisi."
+  },
+  {
+    question: "Sebuah balok memiliki luas permukaan 150 cm². Jika panjangnya 10 cm dan lebarnya 5 cm, berapakah tingginya?",
+    options: ["1 cm", "2 cm", "5/3 cm", "3 cm"],
+    correct: 2,
+    explanation: "150 = 2(pl + pt + lt) -> 75 = (10*5) + 10t + 5t -> 75 = 50 + 15t -> 25 = 15t -> t = 5/3 cm."
+  },
+  {
+    question: "Manakah dari bangun ruang berikut yang memiliki sisi-sisi tegak berbentuk persegi panjang?",
+    options: ["Limas", "Prisma", "Bola", "Kerucut"],
+    correct: 1,
+    explanation: "Sisi tegak prisma selalu berbentuk persegi panjang (atau persegi), sedangkan limas berbentuk segitiga."
+  }
+];
+
+export default function App() {
+  const [gameState, setGameState] = useState('start'); // start, quiz, result
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [answersLog, setAnswersLog] = useState([]);
+
+  const startQuiz = () => {
+    setGameState('quiz');
+    setCurrentQuestion(0);
+    setScore(0);
+    setIsAnswered(false);
+    setSelectedOption(null);
+    setAnswersLog([]);
+  };
+
+  const handleOptionClick = (index) => {
+    if (isAnswered) return;
+    setSelectedOption(index);
+    setIsAnswered(true);
+
+    const isCorrect = index === questions[currentQuestion].correct;
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+    }
+
+    setAnswersLog(prev => [...prev, {
+      questionIdx: currentQuestion,
+      selectedIdx: index,
+      isCorrect: isCorrect
+    }]);
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    } else {
+      setGameState('result');
+    }
+  };
+
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+
+  if (gameState === 'start') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden text-center p-8 border border-slate-100">
+          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Box className="w-10 h-10 text-indigo-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">Kuis Bangun Ruang</h1>
+          <p className="text-slate-500 mb-8">Uji pemahamanmu tentang Kubus, Balok, Prisma, dan Limas!</p>
+          
+          <div className="space-y-4 text-left mb-8 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-3 text-slate-700">
+              <BookOpen className="w-5 h-5 text-indigo-500" />
+              <span>10 Pertanyaan Pilihan Ganda</span>
+            </div>
+            <div className="flex items-center gap-3 text-slate-700">
+              <Calculator className="w-5 h-5 text-indigo-500" />
+              <span>Materi SMP Kelas 8</span>
+            </div>
+          </div>
+
+          <button 
+            onClick={startQuiz}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 group"
+          >
+            Mulai Kuis Sekarang
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === 'result') {
+    const percentage = (score / questions.length) * 100;
+    return (
+      <div className="min-h-screen bg-slate-50 py-12 px-4">
+        <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+          <div className="bg-indigo-600 p-10 text-center text-white">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-10 h-10 text-yellow-300" />
+            </div>
+            <h2 className="text-3xl font-bold mb-1">Hasil Kuis Kamu!</h2>
+            <p className="text-indigo-100">Luar biasa, kamu sudah menyelesaikan semua soal.</p>
+          </div>
+
+          <div className="p-8">
+            <div className="flex justify-around items-center mb-10 text-center">
+              <div>
+                <p className="text-4xl font-black text-indigo-600">{score}/{questions.length}</p>
+                <p className="text-slate-500 text-sm font-medium uppercase tracking-wider">Skor</p>
+              </div>
+              <div className="h-12 w-px bg-slate-200"></div>
+              <div>
+                <p className="text-4xl font-black text-indigo-600">{Math.round(percentage)}%</p>
+                <p className="text-slate-500 text-sm font-medium uppercase tracking-wider">Akurasi</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-8">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                    Ringkasan Jawaban:
+                </h3>
+                {answersLog.map((log, i) => (
+                    <div key={i} className={`p-3 rounded-lg flex items-center justify-between ${log.isCorrect ? 'bg-green-50' : 'bg-red-50'}`}>
+                        <span className="text-sm font-medium text-slate-700">Soal {i + 1}</span>
+                        {log.isCorrect ? (
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                        ) : (
+                            <XCircle className="w-5 h-5 text-red-500" />
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            <button 
+              onClick={startQuiz}
+              className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2"
+            >
+              <RefreshCcw className="w-5 h-5" />
+              Coba Lagi
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQ = questions[currentQuestion];
+
+  return (
+    <div className="min-h-screen bg-slate-50 py-8 px-4 flex flex-col items-center">
+      <div className="max-w-2xl w-full">
+        {/* Progress Header */}
+        <div className="bg-white rounded-2xl shadow-sm p-4 mb-6 flex items-center justify-between border border-slate-100">
+          <div className="flex flex-col flex-1">
+            <div className="flex justify-between items-end mb-2">
+              <span className="text-xs font-bold text-indigo-600 uppercase">Pertanyaan {currentQuestion + 1} / {questions.length}</span>
+              <span className="text-xs font-bold text-slate-400">Progres: {Math.round(progress)}%</span>
+            </div>
+            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-indigo-500 transition-all duration-300 ease-out rounded-full" 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Question Card */}
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 flex flex-col">
+          <div className="p-8">
+            <h2 className="text-xl font-bold text-slate-800 mb-8 leading-relaxed">
+              {currentQ.question}
+            </h2>
+
+            <div className="grid gap-4">
+              {currentQ.options.map((option, index) => {
+                let statusClass = "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50";
+                let icon = null;
+
+                if (isAnswered) {
+                  if (index === currentQ.correct) {
+                    statusClass = "border-green-500 bg-green-50 text-green-700 shadow-sm shadow-green-100";
+                    icon = <CheckCircle className="w-5 h-5 text-green-500" />;
+                  } else if (index === selectedOption) {
+                    statusClass = "border-red-500 bg-red-50 text-red-700";
+                    icon = <XCircle className="w-5 h-5 text-red-500" />;
+                  } else {
+                    statusClass = "border-slate-100 bg-slate-50 opacity-50";
+                  }
+                } else if (selectedOption === index) {
+                  statusClass = "border-indigo-500 bg-indigo-50";
+                }
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleOptionClick(index)}
+                    disabled={isAnswered}
+                    className={`p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center justify-between font-medium group ${statusClass}`}
+                  >
+                    <span>{option}</span>
+                    {icon}
+                  </button>
+                );
+              })}
+            </div>
+
+            {isAnswered && (
+              <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className={`p-5 rounded-2xl flex flex-col gap-2 ${selectedOption === currentQ.correct ? 'bg-green-100/50' : 'bg-orange-100/50'}`}>
+                  <p className="text-sm font-bold uppercase tracking-wide text-slate-600">Penjelasan:</p>
+                  <p className="text-slate-700 leading-relaxed">{currentQ.explanation}</p>
+                </div>
+                
+                <button 
+                  onClick={nextQuestion}
+                  className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  {currentQuestion === questions.length - 1 ? "Selesaikan Kuis" : "Pertanyaan Selanjutnya"}
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Info Footer */}
+        <p className="mt-8 text-center text-slate-400 text-sm">
+          Kuis Matematika SMP • Bangun Ruang Sisi Datar
+        </p>
+      </div>
+    </div>
+  );
+}
